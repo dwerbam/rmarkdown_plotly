@@ -1,0 +1,57 @@
+---
+title: "Best world wines"
+author: "dwerbam"
+date: "2019-10-19"
+output: ioslides_presentation
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, cache = TRUE)
+```
+
+```{r message=FALSE, warning=FALSE, include=FALSE, paged.print=FALSE}
+
+library(dplyr)
+library(ggplot2)
+library(plotly)
+library(lubridate)
+library(knitr)
+library(wesanderson)
+pal <- wes_palette("Zissou1", 21, type = "continuous")
+pal2 <- wes_palette("Zissou1", 7, type = "continuous")
+fancy <- scale_fill_manual(values=pal)
+fancy2 <- scale_fill_manual(values=pal2)
+colfancy2 <- scale_color_manual(values=wes_palette("Zissou1", 4))
+
+```
+
+## Rank. Source: VIVINO
+```{r echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE}
+wine_ratings <- readr::read_csv("https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2019/2019-05-28/winemag-data-130k-v2.csv")
+
+```
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, paged.print=FALSE}
+
+rank <- wine_ratings %>% 
+    group_by(country, title) %>% 
+    summarize(num_reviews=n(), 
+              avg_points=mean(points),       
+              avg_price=mean(price)) %>% 
+    filter(avg_points>75 & avg_price<100 & num_reviews>=2) %>%
+    arrange(country, avg_price, desc(num_reviews), desc(avg_points)) %>% 
+    top_n(1) %>%
+    mutate(reviews=as.factor(num_reviews))
+
+g_rank <- rank %>%
+    ggplot( aes(x=avg_points, y=avg_price)) +
+    geom_point(alpha=0.7) +
+    facet_wrap( vars(country)) + colfancy2 +
+    xlab('Avg. score') + ylab('Avg. price') 
+
+ggplotly(g_rank)
+```
+
+## Thanks!
+
+
